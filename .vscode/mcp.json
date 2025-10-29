@@ -2,7 +2,7 @@
   "servers": {
     "sfctl-ai-server": {
       "type": "stdio",
-      "command": "${workspaceFolder}/target/debug/sfctl-ai-mcp.exe",
+      "command": "${workspaceFolder}/target/release/sfctl-ai-mcp.exe",
       "cwd": "${workspaceFolder}",
       "args": [],
       "env": {
