@@ -57,25 +57,25 @@ pub struct ServiceFabricConnectParams {
     pub use_aad: Option<bool>,
 }
 
-
-
 #[tool_router]
 impl ServiceFabricServer {
     #[tool(description = "Connect to a Service Fabric cluster")]
     async fn sf_connect(
         &self,
-        Parameters(ServiceFabricConnectParams { endpoint, use_aad }): Parameters<ServiceFabricConnectParams>,
+        Parameters(ServiceFabricConnectParams { endpoint, use_aad }): Parameters<
+            ServiceFabricConnectParams,
+        >,
     ) -> Result<CallToolResult, McpError> {
         let endpoint = endpoint.unwrap_or_else(|| "localhost:19000".to_string());
-        
+
         // Auto-detect if AAD should be used based on endpoint
         let should_use_aad = use_aad.unwrap_or_else(|| {
             // Use AAD for remote clusters (not localhost or 127.0.0.1)
             !endpoint.starts_with("localhost") && !endpoint.starts_with("127.0.0.1")
         });
-        
+
         log_to_file(&format!(
-            "sf_connect called with endpoint: {}, use_aad: {}", 
+            "sf_connect called with endpoint: {}, use_aad: {}",
             endpoint, should_use_aad
         ));
 
@@ -106,8 +106,11 @@ impl ServiceFabricServer {
                 endpoint
             )
         };
-        
-        log_to_file(&format!("Executing connection command: {}", connect_command));
+
+        log_to_file(&format!(
+            "Executing connection command: {}",
+            connect_command
+        ));
 
         match session.run_command(&connect_command).await {
             Ok(output) => {
@@ -136,14 +139,12 @@ impl ServiceFabricServer {
     async fn sf_cluster_health(&self) -> Result<CallToolResult, McpError> {
         log_to_file("sf_cluster_health called");
         let mut session = self.pwsh_session.lock().await;
-        
+
         match session.run_command("Get-ServiceFabricClusterHealth").await {
-            Ok(output) => {
-                Ok(CallToolResult::success(vec![Content::text(format!(
-                    "Cluster Health Status:\n{}",
-                    output
-                ))]))
-            }
+            Ok(output) => Ok(CallToolResult::success(vec![Content::text(format!(
+                "Cluster Health Status:\n{}",
+                output
+            ))])),
             Err(e) => {
                 log_to_file(&format!("sf_cluster_health failed: {}", e));
                 Err(McpError {
@@ -159,14 +160,12 @@ impl ServiceFabricServer {
     async fn sf_applications(&self) -> Result<CallToolResult, McpError> {
         log_to_file("sf_applications called");
         let mut session = self.pwsh_session.lock().await;
-        
+
         match session.run_command("Get-ServiceFabricApplication").await {
-            Ok(output) => {
-                Ok(CallToolResult::success(vec![Content::text(format!(
-                    "Applications in cluster:\n{}",
-                    output
-                ))]))
-            }
+            Ok(output) => Ok(CallToolResult::success(vec![Content::text(format!(
+                "Applications in cluster:\n{}",
+                output
+            ))])),
             Err(e) => {
                 log_to_file(&format!("sf_applications failed: {}", e));
                 Err(McpError {
@@ -178,18 +177,16 @@ impl ServiceFabricServer {
         }
     }
 
-    #[tool(description = "List all services in the Service Fabric cluster")]  
+    #[tool(description = "List all services in the Service Fabric cluster")]
     async fn sf_services(&self) -> Result<CallToolResult, McpError> {
         log_to_file("sf_services called");
         let mut session = self.pwsh_session.lock().await;
-        
+
         match session.run_command("Get-ServiceFabricService").await {
-            Ok(output) => {
-                Ok(CallToolResult::success(vec![Content::text(format!(
-                    "Services in cluster:\n{}",
-                    output
-                ))]))
-            }
+            Ok(output) => Ok(CallToolResult::success(vec![Content::text(format!(
+                "Services in cluster:\n{}",
+                output
+            ))])),
             Err(e) => {
                 log_to_file(&format!("sf_services failed: {}", e));
                 Err(McpError {
@@ -205,14 +202,12 @@ impl ServiceFabricServer {
     async fn sf_nodes(&self) -> Result<CallToolResult, McpError> {
         log_to_file("sf_nodes called");
         let mut session = self.pwsh_session.lock().await;
-        
+
         match session.run_command("Get-ServiceFabricNode").await {
-            Ok(output) => {
-                Ok(CallToolResult::success(vec![Content::text(format!(
-                    "Nodes in cluster:\n{}",
-                    output
-                ))]))
-            }
+            Ok(output) => Ok(CallToolResult::success(vec![Content::text(format!(
+                "Nodes in cluster:\n{}",
+                output
+            ))])),
             Err(e) => {
                 log_to_file(&format!("sf_nodes failed: {}", e));
                 Err(McpError {
@@ -223,8 +218,6 @@ impl ServiceFabricServer {
             }
         }
     }
-
-
 
     #[tool(description = "Execute a Service Fabric PowerShell command")]
     async fn sf_command(
